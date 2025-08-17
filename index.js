@@ -123,6 +123,10 @@ const verifyAgentOrAdmin = async (req, res, next) => {
 };
 
 
+// Test route to confirm deployment from public repo
+app.get("/test-repo", (req, res) => {
+  res.send("This backend is using the public repo ✅");
+});
 
 /******Blogs, manage blogs************** */
 app.post("/blogs", async (req, res) => {
