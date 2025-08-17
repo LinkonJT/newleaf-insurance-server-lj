@@ -1,2 +1,5 @@
 node_modules
 .env
+
+newleaf-firebase-admin-sdk.json
+
