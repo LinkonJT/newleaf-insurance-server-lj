@@ -229,6 +229,10 @@ app.post("/newsletter", async (req, res) => {
 /**Create a new policy (Admin only) */
 app.post("/policies", verifyFBToken, verifyAdmin, async (req, res) => {
   const policy = req.body;
+   // Extract numeric value from basePremiumRate string
+  const match = policy.basePremiumRate.match(/\d+/);
+  policy.premiumRateValue = match ? parseInt(match[0], 10) : 0;
+
   policy.createdAt = new Date();
   const result = await policiesCollection.insertOne(policy);
   res.send(result);
@@ -253,11 +257,11 @@ app.post("/policies", verifyFBToken, verifyAdmin, async (req, res) => {
 
 
 app.get("/policies", async (req, res) => {
-  const { category, search, page = 1, limit = 9 } = req.query;
+  const { category, search, page = 1, limit = 9, sort } = req.query;
 
   const query = {};
 
-  if (category && category !== 'all') {
+  if (category && category !== "all") {
     query.category = category;
   }
 
@@ -271,9 +275,20 @@ app.get("/policies", async (req, res) => {
   }
 
   const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  // Default sort by createdAt (newest first)
+  let sortOption = { createdAt: -1 };
+
+  if (sort === "asc") {
+    sortOption = { premiumRateValue: 1 }; 
+  } else if (sort === "desc") {
+    sortOption = { premiumRateValue: -1 }; 
+  }
+
   const total = await policiesCollection.countDocuments(query);
   const policies = await policiesCollection
     .find(query)
+    .sort(sortOption)
     .skip(skip)
     .limit(parseInt(limit))
     .toArray();
